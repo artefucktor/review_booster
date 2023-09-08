@@ -113,7 +113,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-st.header('Ускоритель ревью')
+st.header('Ревью за 5 минут')
 
 
 with st.form("my_form"):
