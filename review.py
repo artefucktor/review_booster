@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 
+DEFAULT_SCHEMA = 'template.csv'
+
 st.header('Ревью за 5 минут')
 st.markdown('''*На что обратить внимание при беглой оценке работы*
 
@@ -46,7 +48,7 @@ if 'run_id' not in st.session_state:
 
 
 # user interface
-schema = read_template(st.file_uploader('Загрузите свой шаблон', type='csv') or 'template.csv')
+schema = read_template(st.file_uploader('Загрузите свой шаблон', type='csv') or DEFAULT_SCHEMA)
 with st.form("my_form", clear_on_submit=False):
     rate = 0
     for i in range(len(schema)):
