@@ -27,6 +27,7 @@ def read_template(template):
             option_group = {}
             option_group['group_name'] = row.group_name
             option_group['group_weight'] = row.group_weight
+            option_group['control_type'] = row.control_type
             option_group['items'] = [row[col] for col in range(start_items, num_items) 
                                      if type(row[col])==str]
             groups.append(option_group)
@@ -54,16 +55,22 @@ with st.form("my_form", clear_on_submit=False):
         group = section['option_group']
         for k in range(len(group)):
             option = group[k]
-            st.radio(option['group_name'],
-                     ['',] + option['items'],
-                     key='section'+str(i)+'_group'+str(k)+'run_'+str(st.session_state.run_id)
-                     )
+            if option['control_type']=='select':
+                st.selectbox(
+                    option['group_name'],
+                    ['',] + option['items'],
+                    key='section'+str(i)+'_group'+str(k)+'run_'+str(st.session_state.run_id))
+            else:
+                st.radio(
+                    option['group_name'],
+                    ['',] + option['items'],
+                    key='section'+str(i)+'_group'+str(k)+'run_'+str(st.session_state.run_id))
     submit = st.form_submit_button('ИТОГО', use_container_width=True)
 
 st.subheader('SUMMARY')
 
 summary = '\n\n'.join(v for k,v in sorted(st.session_state.items())
-                       if k.startswith('section') and len(v)>0) + ' 🤓'
+                       if k.startswith('section') and len(v)>0) + '\n\n🤓'
 st.write(summary)
 st.write('---')
 st.write('*При необходимости – доработать ревью напильником*')
