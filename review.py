@@ -27,13 +27,13 @@ def read_template(template):
         groups = list()
         for row in df[df.section==section].itertuples(index=False):
             option_group = {}
-            option_group['group_name'] = row.group_name
+            option_group['group_name'] = row.group_name.upper()
             option_group['group_weight'] = row.group_weight
             option_group['control_type'] = row.control_type
             option_group['items'] = [row[col] for col in range(start_items, num_items) 
                                      if type(row[col])==str]
             groups.append(option_group)
-        schema.append({'title': section,
+        schema.append({'title': section.upper(),
                        'option_group': groups})
     return schema
 
@@ -53,7 +53,7 @@ with st.form("my_form", clear_on_submit=False):
     rate = 0
     for i in range(len(schema)):
         section = schema[i]
-        st.subheader(section['title'].upper())
+        st.subheader(section['title'])
         group = section['option_group']
         for k in range(len(group)):
             option = group[k]
