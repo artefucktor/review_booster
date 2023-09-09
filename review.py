@@ -3,6 +3,9 @@ import pandas as pd
 
 DEFAULT_SCHEMA = 'template.csv'
 
+
+
+
 st.header('Ревью за 5 минут')
 st.markdown("""
 <style>
@@ -38,35 +41,81 @@ if 'run_id' not in st.session_state:
     st.session_state.run_id = 0
 
 
+
+
 # user interface
 schema = read_template(st.file_uploader('Загрузите свою схему оценки', type='csv') or DEFAULT_SCHEMA)
 with st.form("my_form", clear_on_submit=False):
     rate = 0
-    for i in range(len(schema)):
-        section = schema[i]
+    for num_section in range(len(schema)):
+        section = schema[num_section]
         st.subheader(section['title'])
         group = section['option_group']
-        for k in range(len(group)):
-            option = group[k]
+        for num_group in range(len(group)):
+            option = group[num_group]
+            args = [option['group_name'], ['',] + option['items']]
+            kwargs = {'key': f'item_{st.session_state.run_id:03d}_{num_section:03d}_{num_group:03d}'}
             if option['control_type']=='select':
-                st.selectbox(
-                    option['group_name'],
-                    ['',] + option['items'],
-                    key='section'+str(i)+'_group'+str(k)+'run_'+str(st.session_state.run_id))
+                st.selectbox(*args, **kwargs)
             else:
-                st.radio(
-                    option['group_name'],
-                    ['',] + option['items'],
-                    key='section'+str(i)+'_group'+str(k)+'run_'+str(st.session_state.run_id))
+                st.radio(*args, **kwargs)
     submit = st.form_submit_button('ИТОГО', use_container_width=True)
 
+
+
+
+# summary calculation
+summary = '\n\n'.join(v for k,v in sorted(st.session_state.items())
+                       if k.startswith('item') and len(v)>0) + '\n\n🤓'
+
+rating = {}
+for section in schema:
+    section_name = section['title']
+    rating[section_name] = {'current' : 0,
+                            'max_rate': sum(w['group_weight'] for w in section['option_group'])
+                           }
+
+for k,v in st.session_state.items():
+    if k.startswith('item') and len(v)>0:
+        
+        _, _, num_section, num_group = k.split('_')
+        num_section, num_group = int(num_section), int(num_group)
+        
+        section_name = schema[num_section]['title']
+        
+        group = schema[num_section]['option_group'][num_group]
+        items = schema[num_section]['option_group'][num_group]['items']
+
+        reverse_index = len(items)-items.index(v)
+        weight = group['group_weight']/(len(items)-1)*(reverse_index-1)
+
+        rating[section_name]['current'] += weight
+
+
+
+summary_rating = pd.DataFrame(rating).T
+last_row = len(summary_rating)
+
+summary_rating.loc[last_row] = summary_rating[['current', 'max_rate']].sum(axis=0)
+summary_rating['Доля от максимального'] = summary_rating['current']/summary_rating['max_rate']
+
+summary_rating = summary_rating.rename(
+    index={last_row: 'ИТОГО'}, 
+    columns={'current': 'Набрано баллов',
+             'max_rate': 'Максимально возможный балл'}
+)
+
+
+
+
+# summary output
 st.subheader('SUMMARY')
 
-summary = '\n\n'.join(v for k,v in sorted(st.session_state.items())
-                       if k.startswith('section') and len(v)>0) + '\n\n🤓'
 st.write(summary)
-st.write('---')
-st.write('*При необходимости – доработать ревью напильником*')
+st.caption('*При необходимости – доработать ревью напильником*')
+
+st.subheader('Результаты')
+st.dataframe(summary_rating, use_container_width=True)
 
 st.button('ОЧИСТИТЬ ФОРМУ', on_click=clear_form, use_container_width=True)
 
