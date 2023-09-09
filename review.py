@@ -4,15 +4,6 @@ import pandas as pd
 DEFAULT_SCHEMA = 'template.csv'
 
 st.header('Ревью за 5 минут')
-st.markdown('''*На что обратить внимание при беглой оценке работы*
-
-    - как оформлены описания, структура проекта, есть ли визуализация данных
-    - проведен ли EDA, насколько тщательная предобработка, есть ли фичеинжиниринг
-    - качество кода, стиль, читаемость, отсутствие повторяющихся фрагментов, использование нативных методов
-    - какие технологии используются (например пайплайны)
-    - достигнута ли цель проекта
-''')
-
 st.markdown("""
 <style>
     div[role="radiogroup"] > :first-child{display: none !important;}
@@ -48,7 +39,7 @@ if 'run_id' not in st.session_state:
 
 
 # user interface
-schema = read_template(st.file_uploader('Загрузите свой шаблон', type='csv') or DEFAULT_SCHEMA)
+schema = read_template(st.file_uploader('Загрузите свою схему оценки', type='csv') or DEFAULT_SCHEMA)
 with st.form("my_form", clear_on_submit=False):
     rate = 0
     for i in range(len(schema)):
