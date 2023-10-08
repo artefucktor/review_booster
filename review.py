@@ -121,7 +121,7 @@ with st.form("my_form", clear_on_submit=False):
 
 
 # summary calculation
-summary = '\n- '.join(v for k,v in sorted(st.session_state.items())
+summary = '- '+'\n- '.join(v for k,v in sorted(st.session_state.items())
                        if k.startswith('item') and len(v)>0) + '\n\n🤓'
 
 rating, class_score = process_rate()
